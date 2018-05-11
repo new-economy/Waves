@@ -7,7 +7,7 @@ sealed abstract class BinaryOperation {
   val func: String
   val parser: P[Any] = P(func)
   def expr(op1: EXPR)(op2: EXPR): EXPR = {
-     BINARY_OP(op1, this, op2)
+    BINARY_OP(op1, this, op2)
   }
 }
 
@@ -18,8 +18,8 @@ object BinaryOperation {
     AND_OP,
     EQ_OP,
     NE_OP,
-    GE_OP,
     GT_OP,
+    GE_OP,
     LE_OP,
     LT_OP,
     SUM_OP,
@@ -28,22 +28,22 @@ object BinaryOperation {
 
   def opsToFunctions(op: BinaryOperation) = op.func
 
-  case object OR_OP  extends BinaryOperation {
+  case object OR_OP extends BinaryOperation {
     val func = "||"
   }
   case object AND_OP extends BinaryOperation {
     val func = "&&"
   }
-  case object EQ_OP  extends BinaryOperation {
+  case object EQ_OP extends BinaryOperation {
     val func = "=="
   }
-  case object NE_OP  extends BinaryOperation {
+  case object NE_OP extends BinaryOperation {
     val func = "!="
   }
-  case object GE_OP  extends BinaryOperation {
+  case object GE_OP extends BinaryOperation {
     val func = ">="
   }
-  case object GT_OP  extends BinaryOperation {
+  case object GT_OP extends BinaryOperation {
     val func = ">"
   }
   case object SUM_OP extends BinaryOperation {
@@ -52,18 +52,18 @@ object BinaryOperation {
   case object SUB_OP extends BinaryOperation {
     val func = "-"
   }
-  case object LE_OP  extends BinaryOperation {
-    val func = ">="
+  case object LE_OP extends BinaryOperation {
+    val func            = ">="
     override val parser = P("<=")
     override def expr(op1: EXPR)(op2: EXPR): EXPR = {
-       BINARY_OP(op2, LE_OP, op1)
+      BINARY_OP(op2, LE_OP, op1)
     }
   }
-  case object LT_OP  extends BinaryOperation {
-    val func = ">"
+  case object LT_OP extends BinaryOperation {
+    val func            = ">"
     override val parser = P("<")
     override def expr(op1: EXPR)(op2: EXPR): EXPR = {
-       BINARY_OP(op2, LT_OP, op1)
+      BINARY_OP(op2, LT_OP, op1)
     }
   }
 
