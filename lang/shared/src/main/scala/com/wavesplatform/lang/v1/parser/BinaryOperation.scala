@@ -1,6 +1,6 @@
 package com.wavesplatform.lang.v1.parser
 
-import Expressions._
+import com.wavesplatform.lang.v1.parser.Expressions._
 import fastparse.all._
 
 sealed abstract class BinaryOperation {
@@ -13,20 +13,20 @@ sealed abstract class BinaryOperation {
 
 object BinaryOperation {
 
-  val opsByPriority = List[BinaryOperation](
+  val opsByPriority: List[BinaryOperation] = List[BinaryOperation](
     OR_OP,
     AND_OP,
     EQ_OP,
     NE_OP,
     GT_OP,
     GE_OP,
-    LE_OP,
     LT_OP,
+    LE_OP,
     SUM_OP,
     SUB_OP
   )
 
-  def opsToFunctions(op: BinaryOperation) = op.func
+  def opsToFunctions(op: BinaryOperation): String = op.func
 
   case object OR_OP extends BinaryOperation {
     val func = "||"

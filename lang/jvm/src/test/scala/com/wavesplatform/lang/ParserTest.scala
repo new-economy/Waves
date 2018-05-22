@@ -51,24 +51,41 @@ class ParserTest extends PropSpec with PropertyChecks with Matchers with ScriptG
 
     forAll(testGen) {
       case (expr, str) =>
-        parseOne(str) shouldBe expr
+        withClue(str) {
+          parseOne(str) shouldBe expr
+        }
     }
   }
 
-  property("all types of multiline expressions") {
-    val gas = 50
-    genElementCheck(CONST_LONGgen.map(_._1))
-    genElementCheck(STRgen)
-    genElementCheck(REFgen)
-    genElementCheck(BOOLgen(gas).map(_._1))
-    genElementCheck(SUMgen(gas).map(_._1))
-    genElementCheck(EQ_INTgen(gas).map(_._1))
-    genElementCheck(INTGen(gas).map(_._1))
-    genElementCheck(GEgen(gas).map(_._1))
-    genElementCheck(GTgen(gas).map(_._1))
-    genElementCheck(ANDgen(gas).map(_._1))
-    genElementCheck(ORgen(gas).map(_._1))
-    genElementCheck(BLOCKgen(gas))
+  private def multiLineExprTests(tests: (String, Gen[EXPR])*): Unit = tests.foreach {
+    case (label, gen) =>
+      property(s"multiline expressions: $label") {
+        genElementCheck(gen)
+      }
+  }
+
+  private val gas = 50
+  multiLineExprTests(
+    "CONST_LONG" -> CONST_LONGgen.map(_._1),
+    "STR"        -> STRgen,
+    "REF"        -> REFgen,
+    "BOOL"       -> BOOLgen(gas).map(_._1),
+    "SUM"        -> SUMgen(gas).map(_._1),
+    "EQ"         -> EQ_INTgen(gas).map(_._1),
+    "INT"        -> INTGen(gas).map(_._1),
+    "GE"         -> GEgen(gas).map(_._1),
+    "GT"         -> GTgen(gas).map(_._1),
+    "AND"        -> ANDgen(gas).map(_._1),
+    "OR"         -> ORgen(gas).map(_._1),
+    "BLOCK"      -> BLOCKgen(gas)
+  )
+
+  property("zzz") {
+    parseOne("a <= b") shouldBe BINARY_OP(
+      REF(PART.VALID("b")),
+      LE_OP,
+      REF(PART.VALID("a"))
+    )
   }
 
   property("priority in binary expressions") {

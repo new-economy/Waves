@@ -79,7 +79,7 @@ object Parser {
     }
     .map(CONST_STRING(_))
 
-  private val varName: P[PART[String]] = (char.repX(min = 1, max = 1) ~~ (digit | char).repX()).!.map { x =>
+  private val varName: P[PART[String]] = (char ~~ (digit | char).repX()).!.map { x =>
     if (keywords.contains(x)) PART.INVALID(x, "keywords are restricted")
     else PART.VALID(x)
   }
@@ -93,7 +93,7 @@ object Parser {
     case x                               => INVALID(xs, x)
   }
 
-  private val numberP: P[CONST_LONG] = P(CharIn("+-").rep(max = 1) ~ digit.repX(min = 1)).!.map(t => CONST_LONG(t.toLong))
+  private val numberP: P[CONST_LONG] = P(CharIn("+-").? ~ digit.repX(min = 1)).!.map(t => CONST_LONG(t.toLong))
   private val trueP: P[TRUE.type]    = P("true").map(_ => TRUE)
   private val falseP: P[FALSE.type]  = P("false").map(_ => FALSE)
   private val bracesP: P[EXPR]       = P("(" ~ fallBackExpr ~ ")")
@@ -187,16 +187,15 @@ object Parser {
     case Nil => unaryOp(atom, unaryOps)
     case kind :: restOps =>
       val operand = binaryOp(atom, restOps)
-      P(operand ~ (kind.parser.!.map(_ => kind) ~ operand).rep()).map {
+      P(operand ~ (kind.parser.!.map(_ => kind) ~/ operand).rep()).map {
         case (left: EXPR, r: Seq[(BinaryOperation, EXPR)]) =>
           r.foldLeft(left) { case (acc, (currKind, currOperand)) => currKind.expr(acc)(currOperand) }
       }
   }
 
-  def unaryOp(atom: P[EXPR], ops: Seq[(P[Any], EXPR => EXPR)]): P[EXPR] = {
-    ops.foldRight(atom) { (op, acc) =>
-      (op._1.map(_ => ()) ~ P(unaryOp(atom, ops))).map(op._2) | acc
-    }
+  def unaryOp(atom: P[EXPR], ops: Seq[(P[Any], EXPR => EXPR)]): P[EXPR] = ops.foldRight(atom) {
+    case ((parser, transformer), acc) =>
+      (parser.map(_ => ()) ~ P(unaryOp(atom, ops))).map(transformer) | acc
   }
 
   def apply(str: String): core.Parsed[Seq[EXPR], Char, String] = P(Start ~ fallBackExpr.rep(min = 1) ~ End).parse(str)
